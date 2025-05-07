@@ -1,0 +1,137 @@
+openapi: 3.0.0
+info:
+  title: KeepFood API
+  version: 1.0.0
+  description: Onboarding API
+servers:
+  - url: /api/v1/onboarding
+
+paths:
+  /send-data:
+    post:
+      description: Creates user preference map
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OnboardingData"
+        description: |
+          Example JSON body:
+          {
+            "difficultyIndex": 2,
+            "priceIndex": 1,
+            "mealPreferences": {
+              "mealType": 3,
+              "preferences": [1, 4, 7, 8]
+            }
+            "allergies": ["nuts", "shellfish"]
+          }
+      responses:
+        "200":
+          description: Successfully updated onboarding preferences
+        "400":
+          description: Invalid data format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+
+  /search-allergies:
+    get:
+      description: Search allergies by string
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Substring of expected allergy name
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: Allergens found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: Invalid data format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    ApiResponseError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    OnboardingData:
+      description: Summarized data collected from onboarding process
+      type: object
+      properties:
+        difficultyIndex:
+          description: User's preferred cooking difficulty level (numeric code)
+          type: integer
+        priceIndex:
+          description: User's preferred ingredient cost level (numeric code)
+          type: integer
+        meals:
+          description: Map with uint8 keys (representing type of meal) packed in strings
+          type: object
+          additionalProperties: 
+            description: Chosen meals (numeric codes)
+            type: array
+            items:
+              type: integer
+        allergies:
+          description: "List of allergies (string identifiers)"
+          type: array
+          items:
+            type: string
+      required:
+        - difficultyIndex
+        - priceIndex
+        - meals
+        - allergies

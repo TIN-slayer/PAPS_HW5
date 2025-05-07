@@ -1,0 +1,123 @@
+openapi: 3.0.0
+info:
+  title: KeepFood API
+  version: 1.0.0
+  description: Featured API
+servers:
+  - url: /api/v1/featured
+
+paths:
+  /get:
+    get:
+      description: Returns current user's featured
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                description: Basically array of dish cards
+                type: array
+                items:
+                  $ref: "#/components/schemas/DishCard"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+  /edit:
+    post:
+      description: Returns current user's featured
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Array of featured edits
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/FeaturedEdit"
+      responses:
+        "200":
+          description: Featured edited
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ApiResponseError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    DishCard:
+      description: Base dish params
+      type: object
+      properties:
+        name:
+          type: string
+        preview:
+          description: Preview text based on ingredients
+          type: string
+        cookingTime:
+          description: Cooking time in minutes
+          type: integer
+      required:
+        - name
+        - preview
+        - cookingTime
+
+    FeaturedEdit:
+      description: Instance of edits in featured
+      type: object
+      properties:
+        dishName:
+          type: boolean
+        isRemoval:
+          description: True - remove dish, False - add dish
+          type: boolean
+      required:
+        - dishName
+        - isAddition

@@ -1,0 +1,260 @@
+openapi: 3.0.0
+info:
+  title: KeepFood API
+  version: 1.0.0
+  description: Feed API
+servers:
+  - url: /api/v1/feed
+
+paths:
+  /get-feed:
+    get:
+      description: Generates or uploads feed for user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully uploaded feed
+          content:
+            application/json:
+              schema:
+                description: Basically array of dishes
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dish"
+        "201":
+          description: Successfully generated feed
+          content:
+            application/json:
+              schema:
+                description: Basically array of dishes
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dish"
+        "400":
+          description: Invalid data format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+
+  /get-recipe:
+    get:
+      description: Uploads recipe
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Name of dish
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: Successfully uploaded recipe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recipe"
+        "400":
+          description: Invalid data format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+
+  /search-recipe:
+    get:
+      description: Search recipes by string
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Substring of expected recipe name
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: Recipes found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: Invalid data format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+
+  /send-feedback:
+    post:
+      description: Sends several amount of user interactions with recipe card
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Basically array of dishes
+              type: array
+              items:
+                $ref: "#/components/schemas/UserInteraction"
+      responses:
+        "200":
+          description: FeedbackSent
+        "400":
+          description: Invalid data format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+      
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ApiResponseError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Dish:
+      description: Base dish params
+      type: object
+      properties:
+        name:
+          type: string
+        preview:
+          description: Preview text based on ingredients
+          type: string
+        cookingTime:
+          description: Cooking time in minutes
+          type: integer
+        proteins:
+          type: integer
+        fats:
+          type: integer
+        carbs:
+          type: integer
+        calories:
+          type: integer
+      required:
+        - name
+        - preview
+        - cookingTime
+        - proteins
+        - fats
+        - carbs
+        - calories
+
+    Recipe:
+      description: Basically array of cooking steps
+      type: array
+      items:
+        $ref: "#/components/schemas/CookingStep"
+
+    CookingStep:
+      description: Base dish params
+      type: object
+      properties:
+        description:
+          description: To-do text of cooking step
+          type: string
+        stepTime:
+          description: cooking time for step in seconds
+          type: integer
+        stepOrder:
+          description: serial number of cooking step
+          type: integer
+      required:
+        - description
+        - stepTime
+        - stepOrder
+
+    UserInteraction:
+      description: User interactions with recipe card
+      type: object
+      properties:
+        recipe:
+          description: Name of recipe in db
+          type: string
+        liked:
+          description: If user swiped right - True (likes), left - False (dislikes)
+          type: boolean
+        featured:
+          description: True if user added to featured
+          type: boolean
+        spentTimeLookingCard:
+          description: Amount of type spent looking on recipe card in seconds
+          type: integer
+        spentTimeLookingRecipe:
+          description: Amount of type spent looking recipe itself (highest value && 0 - recipe was not opened) in seconds
+          type: integer
+      required:
+        - recipe
+        - liked
+        - featured
+        - spentTimeLookingCard
+        - spentTimeLookingRecipe

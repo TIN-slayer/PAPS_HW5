@@ -1,0 +1,137 @@
+openapi: 3.0.0
+info:
+  title: KeepFood API
+  version: 1.0.0
+  description: Fridge API
+servers:
+  - url: /api/v1/fridge
+
+paths:
+  /recommend:
+    get:
+      description: Generates or uploads recommendation for user by his preferences and ingredients in the fridge
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Array of ingredients available in the fridge
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/Ingredient"
+      responses:
+        "200":
+          description: Recommendation generated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DishCard"
+        "400":
+          description: Invalid data format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+
+  /search-ingredient:
+    get:
+      description: Searches ingredient in database
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Substring of expected ingredient name
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: Ingredients found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: Invalid data format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "401":
+          description: Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ApiResponseError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Ingredient:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        isAllergen: 
+          type: string
+      required:
+        - name
+        - type
+        - isAllergen
+        
+    DishCard:
+      description: Base dish params
+      type: object
+      properties:
+        name:
+          type: string
+        preview:
+          description: Preview text based on ingredients
+          type: string
+        cookingTime:
+          description: Cooking time in minutes
+          type: integer
+      required:
+        - name
+        - preview
+        - cookingTime
